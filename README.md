@@ -1,61 +1,124 @@
 # UNISEFE-AI-INTERFACE
-AI Interface con Openrouter
+AI Interface
 
 https://riccardobasti.github.io/UNISEFE-AI-INTERFACE/
 
-> **A local-first, single-file AI workspace built around UNISEFE CORE.**
+**A lightweight, single-file AI workspace with OpenRouter and local Ollama support.**
 
-![Status](https://img.shields.io/badge/status-alpha-orange)
-![Version](https://img.shields.io/badge/version-0.0.46--alpha-blue)
-![Core](https://img.shields.io/badge/core-UNISEFE%20CORE-black)
-![Architecture](https://img.shields.io/badge/state-BYTE%20%2F%20VALUE%20%2F%20CHAINS%20%2F%20DELTA%20%2F%20BIT-purple)
-![Format](https://img.shields.io/badge/format-single--file%20HTML-green)
-![Runtime](https://img.shields.io/badge/runtime-browser-lightgrey)
+UNISEFE AI INTERFACE is an experimental AI workspace designed around a simple idea:
+
+> powerful tools underneath, a simple interface on top.
+
+The application is delivered as a single HTML file and combines chat, local files, history, Viewer, configurable AI providers and the UNISEFE CORE state model.
 
 ---
 
-## What is UNISEFE AI INTERFACE?
+## What is included
 
-**UNISEFE AI INTERFACE** is an experimental browser-based environment that brings together:
+- **Single HTML file**
+- **UNISEFE AI chat**
+- **OpenRouter provider**
+- **Ollama local provider**
+- **Local model catalog in the Viewer**
+- **Install / remove / select Ollama models**
+- **Automatic “install and use” flow**
+- **Local file workspace**
+- **Conversation history**
+- **HTML / text / image Viewer**
+- **Viewer code mode**
+- **UNISEFE CORE**
+- **SEFTY support**
+- **Connector architecture**
+- **No localStorage for persistent project data**
 
-- AI chat
-- local files
-- conversation history
-- live HTML viewing
-- source editing
-- local application interaction
-- configurable AI providers
-- connectors
-- SEFTY extensions
-- the canonical **UNISEFE CORE Space**
+---
 
-inside one compact interface.
+## Ollama local models
 
-The current application is distributed as a **single HTML file**.
+UNISEFE can use Ollama as a local AI backend.
 
-No traditional application backend is required for the local workspace itself.
+The user keeps the UNISEFE interface while Ollama runs the selected model locally:
 
 ```text
-UNISEFE AI
-│
-├── FILES
-├── HISTORY
-├── AI
-├── SEFTY
-├── SPACE
-├── VIEWER
-└── CHAT
+UNISEFE AI INTERFACE
+        ↓
+      Ollama
+        ↓
+   Local AI model
 ```
 
-The interface is intentionally designed so that the user can work with AI, files and applications without constantly leaving the same workspace.
+### Model catalog
+
+The Viewer contains a simple local-model catalog.
+
+Each model can show useful information such as:
+
+- model name
+- approximate download size
+- intended use
+- context information
+- estimated suitability for the current computer
+- installation state
+
+The goal is not to expose dozens of technical parameters.  
+The user should only see the information needed to make a practical choice.
+
+### Install and use
+
+A model has a simple **Use** action.
+
+If the model is already installed, UNISEFE selects it immediately.
+
+If the model is not installed, UNISEFE asks whether it should be installed first. After installation completes, the same model becomes active automatically.
+
+```text
+Use
+ ↓
+Already installed?
+ ├─ Yes → activate model
+ └─ No  → ask permission → install → activate model
+```
+
+Models can also be installed or removed directly from the catalog.
+
+### Local endpoint
+
+UNISEFE talks to the local Ollama service at:
+
+```text
+http://localhost:11434
+```
+
+The current integration uses Ollama's local API for:
+
+- listing installed models
+- pulling models
+- deleting models
+- chatting with the selected model
+
+Ollama itself must already be installed and running on the computer.
 
 ---
 
-# Core idea
+## OpenRouter
 
-UNISEFE AI INTERFACE is not only a chat window.
+OpenRouter remains available as an alternative provider.
 
-It is a workspace built around one canonical live state:
+The user can switch between:
+
+```text
+OpenRouter
+Ollama local
+```
+
+OpenRouter uses the configured API key and model.  
+Ollama uses the selected model running on the user's own computer.
+
+---
+
+## UNISEFE CORE
+
+The interface includes the UNISEFE CORE state model:
 
 ```text
 BYTE
@@ -65,620 +128,214 @@ DELTA
 BIT
 ```
 
-The embedded UNISEFE CORE maintains nodes in a single `Space`.
+The application keeps one shared live Space for UI state, files, history, Viewer state, AI configuration and connectors.
 
-Conceptually:
-
-```text
-BYTE    = canonical identity
-VALUE   = current dynamic value
-CHAINS  = dependencies
-DELTA   = change state
-BIT     = closed / stable state
-REV     = revision counter
-```
-
-A node is created once and then updated through its VALUE.
-
-```text
-identity remains
-      ↓
-VALUE changes
-      ↓
-DELTA opens
-      ↓
-dependent CHAINS are notified
-      ↓
-BIT closes again
-```
-
-The goal is to preserve identity and dependency structure instead of rebuilding unrelated state every time something changes.
+Persistent user data is written to files in the selected UNISEFE workspace rather than stored in `localStorage`.
 
 ---
 
-# Interface
+## Local workspace
 
-The application uses four main visual areas.
+UNISEFE can work with a user-selected folder.
 
-```text
-┌──────┬──────────────┬──────────────────────────┬─────────────────────┐
-│ RAIL │ SIDE PANEL   │ VIEWER                   │ CHAT                │
-│      │              │                          │                     │
-│ U    │ Files        │ HTML                     │ UNISEFE AI          │
-│ ▱    │ History      │ Source                   │                     │
-│ ◴    │ AI           │ Images                   │ messages            │
-│ AI   │ SEFTY        │ Local apps               │                     │
-│ S    │ Space        │ External pages           │ composer            │
-│ Δ    │              │                          │                     │
-└──────┴──────────────┴──────────────────────────┴─────────────────────┘
-```
+Current workspace functions include:
 
-The side panel, Viewer and Chat can be opened and closed independently.
+- list files
+- read files
+- create files
+- create folders
+- upload files
+- overwrite files with confirmation
+- open supported files in the Viewer
 
-This keeps the workspace compact while allowing very different layouts:
+The Viewer supports:
 
-```text
-files + viewer + chat
-history + chat
-viewer only
-chat only
-space + viewer
-```
-
----
-
-# Files
-
-UNISEFE AI can work directly with a user-selected local folder.
-
-When supported by the browser, the interface opens the folder in **read/write mode** through the File System Access API.
-
-Available operations include:
-
-- open folder
-- refresh
-- create file
-- create folder
-- upload file
-- read file
-- overwrite an existing file after confirmation
-- inspect the folder tree
-- automatically refresh on supported browsers when filesystem notifications are available
-
-If native read/write folder access is not available, the interface can fall back to a **read-only folder import**.
-
-The visible file tree remains part of the live Space.
-
-```text
-filesystem
-    ↓
-fs/tree
-    ↓
-ui/files
-```
-
-Private internal files under `.unisefe` are not exposed as ordinary user paths.
-
----
-
-# Local persistence
-
-Configuration and history can live inside the selected workspace.
-
-```text
-PROJECT/
-│
-├── user files...
-│
-└── .unisefe/
-    ├── config.json
-    └── history/
-```
-
-This keeps project state close to the files the user is actually working with.
-
-The current interface does not require a separate traditional database for this local workflow.
-
----
-
-# History
-
-UNISEFE AI includes persistent conversation history.
-
-A current conversation can be stored inside the `.unisefe/history/` structure and later reopened in the normal chat interface.
-
-The history system is intended to preserve conversations as workspace data rather than as a second disconnected chat product.
-
-Conceptually:
-
-```text
-YEAR
-└── MONTH
-    └── DAY
-        └── CHAT
-```
-
-The interface can create a new conversation and switch between saved conversations while retaining the same overall workspace.
-
----
-
-# AI
-
-The current interface includes **OpenRouter** integration.
-
-The AI panel provides configuration for:
-
-```text
-MODEL
-API KEY
-INTERNET ON / OFF
-```
-
-The default model field in the current alpha is:
-
-```text
-openrouter/free
-```
-
-The AI layer is kept separate from UNISEFE CORE.
-
-```text
-UNISEFE CORE = state and workspace
-AI provider  = intelligence service
-```
-
-This means the interface is not architecturally tied to a single model.
-
----
-
-# Tool / connector system
-
-UNISEFE AI exposes a connector registry.
-
-A connector can register tools that become available to the AI layer.
-
-Conceptually:
-
-```text
-CONNECTOR
-   ↓
-TOOLS
-   ↓
-AI
-   ↓
-authorized operation
-```
-
-The application publishes a runtime API through:
-
-```javascript
-window.UNISEFE
-```
-
-including access to:
-
-```text
-SPACE
-files
-history
-config
-viewer
-sefty
-connectors
-capabilities
-```
-
-This makes the interface extensible without replacing the core workspace.
-
----
-
-# Viewer
-
-The Viewer is a central part of the environment.
-
-It can display:
-
-- text files
-- source code
+- text
 - HTML
 - images
-- locally selected media
-- supported external HTTP(S) pages
-
-For text and HTML files, the user can switch between:
-
-```text
-VISUALIZZA
-CODICE
-```
-
-When editing source in the Viewer, the current file can be saved back to the selected folder when the workspace is opened read/write.
+- source/code view
 
 ---
 
-# Live HTML Viewer
+## AI tools and connectors
 
-Local HTML applications opened in the Viewer can optionally expose a controlled interaction layer to the AI.
+The AI layer can expose selected UNISEFE functions as tools, including file and history operations.
 
-The embedded Viewer agent supports a limited set of actions:
+The connector architecture is designed so additional services can be added without rebuilding the whole interface.
 
-```text
-observe
-click
-point
-type
-key
-```
-
-This allows the AI to inspect the visible structure of a **local HTML application** and interact with permitted elements.
-
-The agent deliberately excludes protected elements such as:
-
-- password fields
-- file inputs
-- hidden fields
-- one-time-code fields
-- explicitly private / secret elements
-
-It also blocks actions on elements considered potentially navigational or sensitive in this local interaction layer.
-
-The first use requires explicit session authorization.
-
-```text
-LOCAL HTML
-    ↓
-Viewer agent
-    ↓
-controlled DOM observation/actions
-    ↓
-connector
-    ↓
-AI
-```
-
-External websites remain outside this local action agent.
+The project also includes a local Viewer bridge for controlled interaction with HTML applications opened inside the Viewer.
 
 ---
 
-# Viewer Browser
+## Philosophy
 
-The Viewer also includes a browser-oriented connector.
+UNISEFE AI INTERFACE is intentionally small.
 
-It can open:
+The project does not aim to reproduce every setting exposed by AI runtimes or commercial dashboards.
+
+The design rule is:
+
+> **keep only what people actually need.**
+
+Local models should feel like normal applications:
 
 ```text
-HTTP(S) URL
-or
-local workspace file
+choose model → install → use
 ```
 
-inside the same Viewer.
-
-External websites may refuse iframe embedding because of their own security policy.
-
-When that happens, the interface can provide an option to open the address in a separate browser tab.
-
-The current browser connector does **not** give the local Viewer agent permission to operate external websites.
+The technical complexity stays underneath the interface.
 
 ---
 
-# SEFTY
+## Current status
 
-UNISEFE AI can discover SEFTY components from:
+**Alpha / experimental software**
 
-```text
-/SEFTY/
-```
+The project is under active development.
 
-SEFTY is treated as an extension layer rather than as replacement application state.
+Some browser capabilities depend on browser support and local permissions. Ollama integration requires a reachable local Ollama service.
 
-The current UI bridge exposes a deliberately small set of operations, including configuration access and controlled composer insertion.
-
-One example already supported is emoji insertion into the chat composer without automatically sending a message.
-
-```text
-SEFTY
-  ↓
-UI bridge
-  ↓
-controlled action
-```
+Do not treat the project as production-ready security software.
 
 ---
 
-# Chat
+## Quick start
 
-The chat remains permanently integrated with the workspace.
-
-The composer supports:
-
-- multiline text
-- Enter to send
-- Shift+Enter for a new line
-- dynamic textarea height
-
-Assistant responses can render common Markdown structures such as:
-
-- headings
-- paragraphs
-- lists
-- code blocks
-- inline code
-- tables
-- blockquotes
-
-The chat is therefore usable both as a conversational interface and as a technical development surface.
+1. Download the latest UNISEFE AI HTML file.
+2. Open it in a compatible browser.
+3. Open or choose your UNISEFE workspace folder.
+4. Open the **AI** panel.
+5. Choose either **OpenRouter** or **Ollama local**.
+6. For Ollama, make sure Ollama is installed and running.
+7. Open **Local models**.
+8. Choose a model and press **Use**.
+9. If necessary, approve the model download.
+10. Chat from the normal UNISEFE interface.
 
 ---
 
-# UNISEFE Space panel
+## Why Ollama + UNISEFE?
 
-The Space panel exposes the current canonical state.
+Ollama handles local model execution.
 
-Each node can be inspected as:
+UNISEFE handles the user environment.
 
 ```text
-BYTE    Δ DELTA    BIT
+Ollama  = local AI engine
+UNISEFE = interface + files + history + Viewer + tools + workspace
 ```
 
-Internally the current alpha keeps:
+This separation lets UNISEFE stay independent from any single AI model.
+
+A user can use a local Ollama model today and another provider tomorrow without changing the workspace or the way the interface is used.
+
+---
+
+## Repository
+
+**UNISEFE AI INTERFACE**
+
+https://github.com/riccardobasti/UNISEFE-AI-INTERFACE
+
+---
+
+# Italiano
+
+## UNISEFE AI INTERFACE
+
+UNISEFE AI INTERFACE è un workspace AI sperimentale, leggero e contenuto in un singolo file HTML.
+
+L'obiettivo è semplice:
+
+> **potenza sotto, semplicità sopra.**
+
+L'interfaccia riunisce chat, file locali, storico, Viewer, provider AI configurabili e UNISEFE CORE.
+
+### Funzione Ollama
+
+UNISEFE può usare **Ollama come motore AI locale**.
+
+L'utente continua a usare la normale interfaccia UNISEFE:
 
 ```text
-BYTE
-VALUE
-CHAINS
-DELTA
-BIT
-REV
+UNISEFE AI INTERFACE
+        ↓
+      Ollama
+        ↓
+  modello AI locale
 ```
 
-The Space is the common state layer used by the interface itself.
+Nel Viewer è disponibile un catalogo essenziale dei modelli locali, con le informazioni utili per scegliere quale modello usare.
 
-Examples include:
+Per ogni modello possono essere mostrati:
+
+- nome
+- dimensione approssimativa
+- utilizzo principale
+- contesto
+- compatibilità stimata con il PC
+- stato di installazione
+
+### Usa
+
+Il pulsante **Usa** mantiene il flusso il più semplice possibile.
+
+Se il modello è già installato, viene selezionato.
+
+Se non è installato, UNISEFE chiede il permesso, avvia il download tramite Ollama e, una volta completato, rende automaticamente quel modello attivo.
 
 ```text
-ui/panel
-ui/panel/open
-ui/chat/open
-ui/viewer/open
-
-fs/tree
-fs/root
-
-history/index
-history/current
-
-viewer/title
-viewer/content
-viewer/source
-viewer/mode
-
-config/core
-ai/status
-connectors/index
+Usa
+ ↓
+Modello installato?
+ ├─ Sì → attiva
+ └─ No → chiedi → installa → attiva
 ```
 
-This means interface state, files, history and connectors do not need completely separate state models.
+È inoltre possibile installare e rimuovere i modelli direttamente dal catalogo.
 
----
+### Importante
 
-# Architecture
+La funzione attuale **non installa il programma Ollama nel sistema operativo**.
+
+Ollama deve essere già installato e in esecuzione sul computer.  
+UNISEFE gestisce invece i **modelli Ollama** attraverso il servizio locale:
 
 ```text
-                         ┌───────────────────┐
-                         │   UNISEFE SPACE   │
-                         │                   │
-                         │ BYTE              │
-                         │ VALUE             │
-                         │ CHAINS            │
-                         │ DELTA             │
-                         │ BIT               │
-                         └─────────┬─────────┘
-                                   │
-          ┌────────────────────────┼────────────────────────┐
-          │                        │                        │
-          ▼                        ▼                        ▼
-      FILESYSTEM                HISTORY                  CONFIG
-          │                        │                        │
-          └──────────────┬─────────┴─────────┬──────────────┘
-                         │                   │
-                         ▼                   ▼
-                       VIEWER              CHAT
-                         │                   │
-                         ▼                   ▼
-                  LOCAL HTML AGENT        AI PROVIDER
-                         │                   │
-                         └─────────┬─────────┘
-                                   ▼
-                              CONNECTORS
+http://localhost:11434
 ```
 
-The important architectural rule is:
+### Provider disponibili
 
-> **The interface has one live canonical Space; files remain the visible persistence layer.**
-
----
-
-# Local-first design
-
-The application is designed around a local workspace first.
-
-This has several practical consequences:
+Attualmente l'interfaccia può usare:
 
 ```text
-files remain visible
-history can remain with the project
-configuration can remain with the project
-HTML apps can be opened directly
-source can be inspected directly
-the AI can work beside the actual files
+OpenRouter
+Ollama locale
 ```
 
-The browser becomes the runtime.
-
-The selected folder becomes the workspace.
-
-UNISEFE CORE becomes the shared state.
+Questo permette di mantenere la stessa chat e lo stesso workspace cambiando soltanto il motore AI.
 
 ---
 
-# Security boundaries
+## Principio del progetto
 
-The current alpha deliberately separates several levels of authority.
+UNISEFE non vuole diventare un pannello pieno di opzioni inutili.
 
-### Local filesystem
+La regola è:
 
-Write operations require a workspace opened with read/write permission.
+> **se una funzione non serve davvero all'utente, non entra.**
 
-### Existing files
-
-Overwrite is explicit rather than silent.
-
-### Hidden UNISEFE data
-
-Internal `.unisefe` paths are protected from ordinary file operations.
-
-### Viewer agent
-
-Protected fields are excluded.
-
-Local HTML interaction requires session consent.
-
-### External web pages
-
-External pages can be displayed, but the local HTML action agent is not automatically granted control over them.
-
-### AI keys
-
-Provider credentials are configuration data and should never be committed into a public repository.
-
----
-
-# Capabilities
-
-The current runtime exposes capability information equivalent to:
+Per i modelli locali il flusso ideale rimane:
 
 ```text
-core: UNISEFE CORE
-state: BYTE / VALUE / CHAINS / DELTA / BIT
-
-files: true
-history: true
-viewer: true
-sefty: true
-openrouter: true
-web: true
-connectors: dynamic
-filesystem mode: none / ro / rw
+scegli → installa → usa
 ```
 
----
-
-# Current alpha
-
-Current embedded interface version:
-
-```text
-0.0.46-alpha
-```
-
-The project is experimental.
-
-Browser APIs used by the application are not equally supported by every browser.
-
-In particular, full read/write folder access and filesystem observation depend on browser capabilities.
-
-Fallback behavior is provided where practical.
+Tutto il resto deve rimanere sotto il cofano.
 
 ---
 
-# Design principles
-
-UNISEFE AI INTERFACE follows a small set of principles:
-
-### One workspace
-
-AI, files, history and applications remain in one interface.
-
-### One canonical Space
-
-State is represented through UNISEFE CORE instead of introducing unrelated state systems for every feature.
-
-### Permanent identity
-
-The BYTE identifies the node.
-
-The VALUE may change without replacing the identity.
-
-### Visible persistence
-
-User files remain normal files.
-
-### Local before remote
-
-The interface should remain useful even when much of the workspace is local.
-
-### AI is replaceable
-
-The intelligence provider is a component, not the application itself.
-
-### Explicit authority
-
-Operations that affect files or local applications are bounded by explicit permissions.
-
-### Minimal infrastructure
-
-A single HTML file can contain the core interface and runtime.
-
----
-
-# Project direction
-
-UNISEFE AI INTERFACE is intended to become a general workspace in which AI can work directly with:
-
-```text
-documents
-code
-HTML applications
-projects
-files
-history
-tools
-connectors
-UNISEFE-native applications
-```
-
-without fragmenting the user experience into separate tools.
-
-The long-term direction is simple:
-
-> **one interface, one Space, many capabilities.**
-
----
-
-## Experimental status
-
-This repository represents active experimental development.
-
-Interfaces, connector contracts and browser integration may change between alpha versions.
-
-Use test workspaces when experimenting with write operations.
-
----
-
-# UNISEFE
-
-```text
-AI is not the workspace.
-
-The workspace remains yours.
-
-UNISEFE AI is the interface between
-your files,
-your applications,
-your history,
-your tools,
-and intelligence.
-```
-
-**UNISEFE AI INTERFACE · Alpha**
+**Project:** UNISEFE  
+**Repository:** `riccardobasti/UNISEFE-AI-INTERFACE`  
+**Status:** Alpha / Experimental
